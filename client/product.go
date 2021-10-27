@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -38,7 +39,7 @@ func NewClientProduct(host string, timeout time.Duration) *Client {
 
 type ProductInt interface {
 	GetProductByid(id int) product.Products
-	InsertProduct(input product.InputNewPoduct) product.Product
+	InsertProduct(input product.InputNewPoduct) (product.Product, error)
 }
 
 func (c *Client) GetProductByid(id int) product.Products {
@@ -81,46 +82,42 @@ func (c *Client) GetProductByid(id int) product.Products {
 
 }
 
-func (c *Client) InsertProduct(input product.InputNewPoduct) product.Product {
+func (c *Client) InsertProduct(input product.InputNewPoduct) (product.Product, error) {
 	client := http.Client{
 		Timeout: c.timeout,
 	}
 
 	reqBodyProduct, err := json.Marshal(input)
 	if err != nil {
-		fmt.Println(err)
-		return product.Product{}
+		return product.Product{}, err
 	}
 
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v1/newproduct", c.host), bytes.NewBuffer(reqBodyProduct))
 	if err != nil {
-		fmt.Println(err)
-		return product.Product{}
+		return product.Product{}, err
 	}
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return product.Product{}
+		return product.Product{}, err
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return product.Product{}
+		return product.Product{}, errors.New("not http status ok")
 	}
 
 	resByte, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return product.Product{}
+		return product.Product{}, err
 	}
 
 	var response ResponseProduct
 	err = json.Unmarshal(resByte, &response)
 	if err != nil {
-		return product.Product{}
+		return product.Product{}, err
 	}
 
-	return response.Data
+	return response.Data, nil
 }
