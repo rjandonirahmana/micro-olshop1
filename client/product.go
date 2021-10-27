@@ -28,6 +28,11 @@ type ResponseProduct struct {
 	Data product.Product `json:"data"`
 }
 
+type responseProducts struct {
+	Meta Meta              `json:"meta"`
+	Data []product.Product `json:"data"`
+}
+
 type Client struct {
 	host    string
 	timeout time.Duration
@@ -120,4 +125,40 @@ func (c *Client) InsertProduct(input product.InputNewPoduct) (product.Product, e
 	}
 
 	return response.Data, nil
+}
+
+func (c *Client) SearchProduct(keyword, category, order string) ([]product.Product, error) {
+	client := http.Client{
+		Timeout: c.timeout,
+	}
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v1/search/%s?category=%s&order=%s", c.host, keyword, category, order), nil)
+	if err != nil {
+		return []product.Product{}, err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return []product.Product{}, err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		return []product.Product{}, err
+	}
+
+	resByte, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return []product.Product{}, err
+	}
+
+	var response responseProducts
+	err = json.Unmarshal(resByte, &response)
+	if err != nil {
+		return []product.Product{}, err
+	}
+
+	return response.Data, nil
+
 }
