@@ -14,6 +14,7 @@ type ServiceProductInt interface {
 	GetProductCategory(id int) ([]Product, error)
 	GetProductByid(id int) (Products, error)
 	SearchByCategoryByOrder(keyword string, category, order int) ([]Product, error)
+	InsertNewProduct(name, desc string, price uint32, qty uint, seller_id uint, category_id uint) (Product, error)
 }
 
 func (s *service) GetProductCategory(id int) ([]Product, error) {
@@ -51,4 +52,21 @@ func (s *service) SearchByCategoryByOrder(keyword string, category, order int) (
 	}
 
 	return products, nil
+}
+
+func (s *service) InsertNewProduct(name, desc string, price uint32, qty uint, seller_id uint, category_id uint) (Product, error) {
+	product := Product{
+		Name:        name,
+		Description: desc,
+		Price:       price,
+		Quantity:    qty,
+		SellerID:    seller_id,
+		CategoryID:  category_id,
+	}
+	product, err := s.repository.InsertNewProduct(product)
+	if err != nil {
+		return product, err
+	}
+
+	return product, nil
 }

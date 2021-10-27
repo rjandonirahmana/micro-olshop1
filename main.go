@@ -28,6 +28,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	defer db.Close()
+
 	repoProduct := product.NewRepoProduct(db)
 	serviceProduct := product.NewUsecaseProduct(repoProduct)
 	HandlerProduct := p.NewProductHandler(serviceProduct)
@@ -38,6 +40,7 @@ func main() {
 	api.GET("/product/:id", HandlerProduct.GetProductByID)
 	api.GET("/productcategory", HandlerProduct.GetProductByCategory)
 	api.GET("/search/:keyword", HandlerProduct.SearchProduct)
+	api.POST("/newproduct", HandlerProduct.InsertNewProduct)
 
 	c.Run(":6060")
 

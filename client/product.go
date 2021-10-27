@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -21,6 +22,11 @@ type Meta struct {
 	Status  string `json:"status"`
 }
 
+type ResponseProduct struct {
+	Meta Meta            `json:"meta"`
+	Data product.Product `json:"data"`
+}
+
 type Client struct {
 	host    string
 	timeout time.Duration
@@ -28,6 +34,11 @@ type Client struct {
 
 func NewClientProduct(host string, timeout time.Duration) *Client {
 	return &Client{host: host, timeout: timeout}
+}
+
+type ProductInt interface {
+	GetProductByid(id int) product.Products
+	InsertProduct(input product.InputNewPoduct) product.Product
 }
 
 func (c *Client) GetProductByid(id int) product.Products {
@@ -68,4 +79,48 @@ func (c *Client) GetProductByid(id int) product.Products {
 
 	return response.Data
 
+}
+
+func (c *Client) InsertProduct(input product.InputNewPoduct) product.Product {
+	client := http.Client{
+		Timeout: c.timeout,
+	}
+
+	reqBodyProduct, err := json.Marshal(input)
+	if err != nil {
+		fmt.Println(err)
+		return product.Product{}
+	}
+
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v1/newproduct", c.host), bytes.NewBuffer(reqBodyProduct))
+	if err != nil {
+		fmt.Println(err)
+		return product.Product{}
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return product.Product{}
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		return product.Product{}
+	}
+
+	resByte, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return product.Product{}
+	}
+
+	var response ResponseProduct
+	err = json.Unmarshal(resByte, &response)
+	if err != nil {
+		return product.Product{}
+	}
+
+	return response.Data
 }

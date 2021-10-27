@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/rjandonirahmana/micro-olshop1/handler"
 	"github.com/rjandonirahmana/micro-olshop1/product"
 )
@@ -78,5 +79,34 @@ func (h *HandlerProduct) SearchProduct(c *gin.Context) {
 	}
 
 	response := handler.APIResponse("success", http.StatusOK, "success get product", product)
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *HandlerProduct) InsertNewProduct(c *gin.Context) {
+	var input product.InputNewPoduct
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		response := handler.APIResponse("failed", http.StatusUnprocessableEntity, err.Error(), nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+
+	}
+	validate := validator.New()
+	err = validate.Struct(&input)
+	if err != nil {
+		response := handler.APIResponse("failed", http.StatusUnprocessableEntity, err.Error(), nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	product, err := h.service.InsertNewProduct(input.Name, input.Description, input.Price, input.Quantity, input.Seller_id, input.Category_id)
+	if err != nil {
+		response := handler.APIResponse("failed to insert prouct", http.StatusUnprocessableEntity, err.Error(), nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	response := handler.APIResponse("success insert product", http.StatusOK, "success get product", product)
 	c.JSON(http.StatusOK, response)
 }
