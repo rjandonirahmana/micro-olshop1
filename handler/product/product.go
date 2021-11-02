@@ -8,14 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/rjandonirahmana/micro-olshop1/handler"
-	"github.com/rjandonirahmana/micro-olshop1/product"
+	"github.com/rjandonirahmana/micro-olshop1/model"
+	"github.com/rjandonirahmana/micro-olshop1/service"
 )
 
 type HandlerProduct struct {
-	service product.ServiceProductInt
+	service service.ServiceProductInt
 }
 
-func NewProductHandler(service product.ServiceProductInt) *HandlerProduct {
+func NewProductHandler(service service.ServiceProductInt) *HandlerProduct {
 	return &HandlerProduct{service: service}
 }
 
@@ -27,7 +28,7 @@ func (h *HandlerProduct) GetProductByCategory(c *gin.Context) {
 		return
 	}
 
-	products, err := h.service.GetProductCategory(id)
+	products, err := h.service.GetProductCategory(uint(id))
 	if err != nil {
 		response := handler.APIResponse(err.Error(), http.StatusInternalServerError, "failed", nil)
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -46,7 +47,7 @@ func (h *HandlerProduct) GetProductByID(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
-	product, err := h.service.GetProductByid(product_id)
+	product, err := h.service.GetProductByid(uint(product_id))
 	if err != nil {
 		response := handler.APIResponse("failed", http.StatusUnprocessableEntity, err.Error(), nil)
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -71,7 +72,7 @@ func (h *HandlerProduct) SearchProduct(c *gin.Context) {
 
 	fmt.Println(keyword)
 
-	product, err := h.service.SearchByCategoryByOrder(keyword, category, order)
+	product, err := h.service.SearchByCategoryByOrder(keyword, uint(category), uint(order))
 	if err != nil {
 		response := handler.APIResponse("failed", http.StatusUnprocessableEntity, err.Error(), nil)
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -83,7 +84,7 @@ func (h *HandlerProduct) SearchProduct(c *gin.Context) {
 }
 
 func (h *HandlerProduct) InsertNewProduct(c *gin.Context) {
-	var input product.InputNewPoduct
+	var input model.InputNewPoduct
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {

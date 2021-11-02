@@ -45,6 +45,7 @@ func NewClientProduct(host string, timeout time.Duration) *Client {
 type ProductInt interface {
 	GetProductByid(id int) product.Products
 	InsertProduct(input product.InputNewPoduct) (product.Product, error)
+	SearchProduct(keyword, category, order string) ([]product.Product, error)
 }
 
 func (c *Client) GetProductByid(id int) product.Products {

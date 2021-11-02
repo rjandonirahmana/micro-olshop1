@@ -1,4 +1,5 @@
-package product
+package model
+
 
 type Product struct {
 	ID            uint            `db:"id" json:"id"`

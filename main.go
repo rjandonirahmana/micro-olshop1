@@ -10,7 +10,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	p "github.com/rjandonirahmana/micro-olshop1/handler/product"
-	"github.com/rjandonirahmana/micro-olshop1/product"
+	"github.com/rjandonirahmana/micro-olshop1/repository"
+	"github.com/rjandonirahmana/micro-olshop1/service"
 )
 
 func main() {
@@ -21,17 +22,15 @@ func main() {
 	dbUserName := os.Getenv("DB_username")
 	dbName := os.Getenv("DB_name")
 	dbPass := os.Getenv("DB_password")
-	dbstring := fmt.Sprintf("%s:%s@(localhost:3306)/%s?parseTime=true", dbUserName, dbPass, dbName)
+	dbstring := fmt.Sprintf("%s:%s@(localhost:3300)/%s?parseTime=true", dbUserName, dbPass, dbName)
 
 	db, err := sqlx.Connect("mysql", dbstring)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	defer db.Close()
-
-	repoProduct := product.NewRepoProduct(db)
-	serviceProduct := product.NewUsecaseProduct(repoProduct)
+	repoProduct := repository.NewRepoProduct(db)
+	serviceProduct := service.NewUsecaseProduct(repoProduct)
 	HandlerProduct := p.NewProductHandler(serviceProduct)
 
 	c := gin.Default()
@@ -42,6 +41,6 @@ func main() {
 	api.GET("/search/:keyword", HandlerProduct.SearchProduct)
 	api.POST("/newproduct", HandlerProduct.InsertNewProduct)
 
-	c.Run(":6060")
+	c.Run(":6262")
 
 }
