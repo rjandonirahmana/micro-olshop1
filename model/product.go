@@ -1,6 +1,5 @@
 package model
 
-
 type Product struct {
 	ID            uint            `db:"id" json:"id"`
 	Name          string          `db:"name" json:"name"`
@@ -8,8 +7,8 @@ type Product struct {
 	Quantity      uint            `db:"quantity" json:"quantity"`
 	Description   string          `db:"description" json:"description"`
 	Rating        float32         `json:"rating"`
-	SellerID      uint            `db:"seller_id" json:"-"`
-	CategoryID    uint            `db:"category_id" json:"-"`
+	SellerID      uint            `db:"seller_id" json:"seller_id"`
+	CategoryID    uint            `db:"category_id" json:"category_id"`
 	Category      ProductCategory `db:"product_category" json:"category,omitempty"`
 	ProductImages ProductImage    `db:"product_images" json:"product_images,omitempty"`
 }
