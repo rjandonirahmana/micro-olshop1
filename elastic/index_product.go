@@ -14,6 +14,7 @@ type Index struct {
 
 func NewCreateIndex(addres []string) *Index {
 	elastic, err := elasticsearch.NewClient(elasticsearch.Config{
+		
 		Addresses: addres,
 	})
 
@@ -53,3 +54,4 @@ func (i *Index) CreateIndex(index_name string) error {
 	return nil
 
 }
+

@@ -27,8 +27,9 @@ type ProductCategory struct {
 type Products struct {
 	Name          string          `db:"name" json:"name"`
 	ID            uint            `db:"id" json:"id"`
-	Price         int32           `db:"price" json:"price"`
+	Price         uint32          `db:"price" json:"price"`
 	Quantity      uint            `db:"quantity" json:"quantity"`
+	Rating        float32         `json:"rating"`
 	Category_id   uint            `db:"category_id" json:"-"`
 	Category      ProductCategory `db:"product_category" json:"category"`
 	Description   string          `db:"description" json:"description,omitempty"`
@@ -37,10 +38,10 @@ type Products struct {
 }
 
 type InputNewPoduct struct {
-	Name        string `json:"name" validate:"required"`
-	Price       uint32 `json:"price" validate:"required"`
-	Quantity    uint   `json:"qty" validate:"required"`
-	Category_id uint   `json:"category_id" validate:"required"`
-	Description string `json:"desc" validate:"required"`
-	Seller_id   uint   `json:"seller_id" validate:"required"`
+	Name        string `json:"name" validate:"required" form:"name"`
+	Price       uint32 `json:"price" validate:"required" form:"price"`
+	Quantity    uint   `json:"qty" validate:"required" form:"qty"`
+	Category_id uint   `json:"category_id" validate:"required" form:"category_id"`
+	Description string `json:"desc" validate:"required" form:"desc"`
+	Seller_id   uint   `json:"seller_id" validate:"required" form:"seller_id"`
 }

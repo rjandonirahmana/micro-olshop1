@@ -17,6 +17,8 @@ type RepoProduct interface {
 	GetByCategoryID(id uint) ([]model.Product, error)
 	SearchAndByorder(keyword string, category, order uint) ([]model.Product, error)
 	InsertNewProduct(product model.Product) (model.Product, error)
+	DeleteByID(id uint) error
+	UpdateProduct(p model.Product) (model.Product, error)
 }
 
 func NewRepoProduct(db *sqlx.DB) *repository {
@@ -92,5 +94,30 @@ func (r *repository) InsertNewProduct(product model.Product) (model.Product, err
 	}
 
 	return product, nil
+
+}
+
+func (r *repository) DeleteByID(id uint) error {
+	querry := `DELETE FROM products WHERE id = ?`
+
+	_, err := r.db.Exec(querry, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *repository) UpdateProduct(p model.Product) (model.Product, error) {
+	var err error
+
+	querry := `UPDATE products SET name = ?, description = ?, price = ?, quantity = ?, category_id = ? WHERE id = ?`
+	_, err = r.db.Exec(querry, p.Name, p.Description, p.Price, p.Quantity, p.CategoryID, p.ID)
+
+	if err != nil {
+		return p, err
+	}
+
+	return p, nil
 
 }

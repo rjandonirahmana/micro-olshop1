@@ -38,12 +38,12 @@ func NewClientProduct(host string, timeout time.Duration) *Client {
 }
 
 type ProductInt interface {
-	GetProductByid(id int) model.Products
+	GetProductByid(id uint) model.Products
 	InsertProduct(input model.InputNewPoduct) (model.Product, error)
 	SearchProduct(keyword, category, order string) ([]model.Product, error)
 }
 
-func (c *Client) GetProductByid(id int) model.Products {
+func (c *Client) GetProductByid(id uint) model.Products {
 	cl := http.Client{
 		Timeout: c.timeout,
 	}

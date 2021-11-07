@@ -108,6 +108,45 @@ func (h *HandlerProduct) InsertNewProduct(c *gin.Context) {
 		return
 	}
 
-	response := handler.APIResponse("success insert product", http.StatusOK, "success get product", product)
+	response := handler.APIResponse("success insert product", http.StatusOK, "success", product)
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *HandlerProduct) UpdateProduct(c *gin.Context) {
+
+	name := c.Request.FormValue("name")
+	desc := c.Request.FormValue("desc")
+	productID, _ := strconv.Atoi(c.Request.FormValue("product_id"))
+	sellerID, _ := strconv.Atoi(c.Request.FormValue("seller_id"))
+	price, _ := strconv.Atoi(c.Request.FormValue("price"))
+	qty, _ := strconv.Atoi(c.Request.FormValue("qty"))
+	categoryID, _ := strconv.Atoi(c.Request.FormValue("category_id"))
+
+	product, err := h.service.UpdateProduct(uint(productID), uint(sellerID), name, desc, uint32(price), uint(qty), uint(categoryID))
+	if err != nil {
+		response := handler.APIResponse("failed to insert prouct", http.StatusUnprocessableEntity, err.Error(), nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	response := handler.APIResponse("successfully update product", http.StatusOK, "success", product)
+	c.JSON(http.StatusOK, response)
+
+}
+
+func (h *HandlerProduct) GetProductsByname(c *gin.Context) {
+	keyword := c.Request.FormValue("keyword")
+	categoryID, _ := strconv.Atoi(c.Request.FormValue("category"))
+	category := uint(categoryID)
+
+	products, err := h.service.GetProductByName(&keyword, &category)
+	if err != nil {
+		response := handler.APIResponse("failed to insert prouct", http.StatusUnprocessableEntity, err.Error(), nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	response := handler.APIResponse("successfully get products", http.StatusOK, "success", products)
+	c.JSON(http.StatusOK, response)
+
 }
