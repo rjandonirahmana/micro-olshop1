@@ -23,10 +23,10 @@ type Meta struct {
 	Status  string `json:"status"`
 }
 
-// type responseProducts struct {
-// 	Meta Meta              `json:"meta"`
-// 	Data []product.Product `json:"data"`
-// }
+type responseProduct struct {
+	Meta Meta          `json:"meta"`
+	Data model.Product `json:"data"`
+}
 
 type Client struct {
 	host    string
@@ -114,13 +114,14 @@ func (c *Client) InsertProduct(input model.InputNewPoduct) (model.Product, error
 		return model.Product{}, err
 	}
 
-	var response Response
-	err = json.Unmarshal(resByte, &response)
+	var reponse responseProduct
+
+	err = json.Unmarshal(resByte, &reponse)
 	if err != nil {
 		return model.Product{}, err
 	}
 
-	return response.Data.(model.Product), nil
+	return reponse.Data, nil
 }
 
 func (c *Client) SearchProduct(keyword, category, order string) ([]model.Product, error) {

@@ -230,3 +230,6 @@ func (r *repository) GetProductByName(ctx context.Context, product *string, cate
 
 	return res, nil
 }
+
+
+// func (r *repository) SearchProducts(name *string, )
