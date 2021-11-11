@@ -48,11 +48,11 @@ func main() {
 	api := c.Group("/api/v1")
 
 	api.GET("/product/:id", HandlerProduct.GetProductByID)
-	api.GET("/productcategory", HandlerProduct.GetProductByCategory)
+	api.GET("/product/category", HandlerProduct.GetProductByCategory)
 	api.GET("/search/:keyword", HandlerProduct.SearchProduct)
 	api.POST("/newproduct", HandlerProduct.InsertNewProduct)
 	api.PUT("/product", HandlerProduct.UpdateProduct)
-	api.GET("/products", HandlerProduct.GetProductsByname)
+	api.GET("/product", HandlerProduct.GetProductsByname)
 
 	c.Run(":6262")
 

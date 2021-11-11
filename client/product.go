@@ -23,14 +23,23 @@ type Meta struct {
 	Status  string `json:"status"`
 }
 
-type responseProduct struct {
-	Meta Meta          `json:"meta"`
-	Data model.Product `json:"data"`
-}
+// type responseProduct struct {
+// 	Meta Meta          `json:"meta"`
+// 	Data model.Product `json:"data"`
+// }
 
 type Client struct {
 	host    string
 	timeout time.Duration
+}
+
+type responseProducts struct {
+	Meta Meta            `json:"meta"`
+	Data []model.Product `json:"data"`
+}
+
+type Storage struct {
+	Source interface{} `json:"data"`
 }
 
 func NewClientProduct(host string, timeout time.Duration) *Client {
@@ -39,7 +48,7 @@ func NewClientProduct(host string, timeout time.Duration) *Client {
 
 type ProductInt interface {
 	GetProductByid(id uint) model.Products
-	InsertProduct(input model.InputNewPoduct) (model.Product, error)
+	InsertProduct(input model.InputNewPoduct) (*model.Product, error)
 	SearchProduct(keyword, category, order string) ([]model.Product, error)
 }
 
@@ -83,45 +92,46 @@ func (c *Client) GetProductByid(id uint) model.Products {
 
 }
 
-func (c *Client) InsertProduct(input model.InputNewPoduct) (model.Product, error) {
+func (c *Client) InsertProduct(input model.InputNewPoduct) (*model.Product, error) {
 	client := http.Client{
 		Timeout: c.timeout,
 	}
 
 	reqBodyProduct, err := json.Marshal(input)
 	if err != nil {
-		return model.Product{}, err
+		return nil, err
 	}
 
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v1/newproduct", c.host), bytes.NewBuffer(reqBodyProduct))
 	if err != nil {
-		return model.Product{}, err
+		return nil, err
 	}
 
 	res, err := client.Do(req)
 	if err != nil {
-		return model.Product{}, err
+		return nil, err
 	}
+	fmt.Println(res.Body)
 
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return model.Product{}, errors.New("not http status ok")
+		return nil, errors.New("not http status ok")
 	}
 
-	resByte, err := ioutil.ReadAll(res.Body)
+	var (
+		response model.Product
+		storage  Storage
+	)
+
+	storage.Source = &response
+
+	err = json.NewDecoder(res.Body).Decode(&storage)
 	if err != nil {
-		return model.Product{}, err
+		return nil, err
 	}
 
-	var reponse responseProduct
-
-	err = json.Unmarshal(resByte, &reponse)
-	if err != nil {
-		return model.Product{}, err
-	}
-
-	return reponse.Data, nil
+	return &response, nil
 }
 
 func (c *Client) SearchProduct(keyword, category, order string) ([]model.Product, error) {
@@ -150,12 +160,12 @@ func (c *Client) SearchProduct(keyword, category, order string) ([]model.Product
 		return []model.Product{}, err
 	}
 
-	var response Response
+	var response responseProducts
 	err = json.Unmarshal(resByte, &response)
 	if err != nil {
 		return []model.Product{}, err
 	}
 
-	return response.Data.([]model.Product), nil
+	return response.Data, nil
 
 }

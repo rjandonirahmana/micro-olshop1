@@ -23,9 +23,9 @@ func NewElasticRepo(elastic Index, timeduration time.Duration) *repository {
 }
 
 type RepoProduct interface {
-	InsertProduct(ctx context.Context, product model.Product) error
+	InsertProduct(ctx context.Context, product *model.Product) error
 	GetProductByID(ctx context.Context, id string) (model.Product, error)
-	GetProductByName(ctx context.Context, product *string, categoryID *uint) ([]model.Product, error)
+	GetProductByName(ctx context.Context, product *string, categoryID *uint) ([]*model.Product, error)
 	UpdateProduct(ctx context.Context, product model.Product) (model.Product, error)
 }
 
@@ -33,7 +33,7 @@ type Storage struct {
 	Source interface{} `json:"_source"`
 }
 
-func (r *repository) InsertProduct(ctx context.Context, product model.Product) error {
+func (r *repository) InsertProduct(ctx context.Context, product *model.Product) error {
 	reqBody, err := json.Marshal(product)
 	if err != nil {
 		return err
@@ -147,7 +147,7 @@ func (r *repository) UpdateProduct(ctx context.Context, product model.Product) (
 	return body, nil
 }
 
-func (r *repository) GetProductByName(ctx context.Context, product *string, categoryID *uint) ([]model.Product, error) {
+func (r *repository) GetProductByName(ctx context.Context, product *string, categoryID *uint) ([]*model.Product, error) {
 
 	var query string
 	var buf bytes.Buffer
@@ -211,17 +211,29 @@ func (r *repository) GetProductByName(ctx context.Context, product *string, cate
 		return nil, fmt.Errorf("%v", err)
 	}
 
-	res := make([]model.Product, len(hits.Hits.Hits))
+	res := make([]*model.Product, len(hits.Hits.Hits))
 
-	for i, hit := range hits.Hits.Hits {
-		res[i].ID = hit.ID
-		res[i].Name = hit.Name
-		res[i].Price = hit.Price
-		res[i].Quantity = hit.Quantity
-		res[i].Description = hit.Description
-		res[i].Rating = hit.Rating
-		res[i].SellerID = hit.SellerID
-		res[i].CategoryID = hit.CategoryID
+	for _, hit := range hits.Hits.Hits {
+		pr := &model.Product{
+			ID:          hit.ID,
+			Name:        hit.Name,
+			Price:       hit.Price,
+			Quantity:    hit.Quantity,
+			Description: hit.Description,
+			Rating:      hit.Rating,
+			SellerID:    hit.SellerID,
+			CategoryID:  hit.CategoryID,
+		}
+
+		res = append(res, pr)
+		// res[i].ID = hit.ID
+		// res[i].Name = hit.Name
+		// res[i].Price = hit.Price
+		// res[i].Quantity = hit.Quantity
+		// res[i].Description = hit.Description
+		// res[i].Rating = hit.Rating
+		// res[i].SellerID = hit.SellerID
+		// res[i].CategoryID = hit.CategoryID
 
 		// res[i].Priority = internal.Priority(hit.Source.Priority)
 		// res[i].Dates.Due = time.Unix(0, hit.Source.DateDue).UTC()
@@ -230,6 +242,5 @@ func (r *repository) GetProductByName(ctx context.Context, product *string, cate
 
 	return res, nil
 }
-
 
 // func (r *repository) SearchProducts(name *string, )
