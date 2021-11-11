@@ -47,12 +47,12 @@ func NewClientProduct(host string, timeout time.Duration) *Client {
 }
 
 type ProductInt interface {
-	GetProductByid(id uint) model.Products
+	GetProductByid(id uint) (model.Products, error)
 	InsertProduct(input model.InputNewPoduct) (*model.Product, error)
 	SearchProduct(keyword, category, order string) ([]model.Product, error)
 }
 
-func (c *Client) GetProductByid(id uint) model.Products {
+func (c *Client) GetProductByid(id uint) (*model.Products, error) {
 	cl := http.Client{
 		Timeout: c.timeout,
 	}
@@ -61,34 +61,34 @@ func (c *Client) GetProductByid(id uint) model.Products {
 	req, err := http.NewRequest("GET", reqHeader, nil)
 	if err != nil {
 		fmt.Println(err)
-		return model.Products{}
+		return nil, err
 	}
 
 	res, err := cl.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return model.Products{}
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
 		fmt.Println(err)
-		return model.Products{}
+		return nil, err
 	}
 
-	resByte, err := ioutil.ReadAll(res.Body)
+	var (
+		response model.Products
+		resource Storage
+	)
+
+	resource.Source = &response
+
+	err = json.NewDecoder(res.Body).Decode(&resource)
 	if err != nil {
-		fmt.Println(err)
-		return model.Products{}
+		return nil, err
 	}
 
-	var response Response
-	err = json.Unmarshal(resByte, &response)
-	if err != nil {
-		return model.Products{}
-	}
-
-	return response.Data.(model.Products)
+	return &response, nil
 
 }
 
