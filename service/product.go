@@ -94,7 +94,7 @@ func (s *serviceProduct) UpdateProduct(productID, sellerID *uint, name, desc *st
 		return nil, err
 	}
 
-	if product.SellerID != uint(*sellerID) {
+	if product.SellerID != *sellerID {
 		return nil, fmt.Errorf("can not update info product this is not your product")
 	}
 
@@ -111,7 +111,7 @@ func (s *serviceProduct) UpdateProduct(productID, sellerID *uint, name, desc *st
 		*qty = product.Quantity
 	}
 	if *categoryID == 0 {
-		*categoryID = product.Category_id
+		*categoryID = product.CategoryID
 	}
 
 	updatedProduct := &model.Product{
@@ -129,6 +129,11 @@ func (s *serviceProduct) UpdateProduct(productID, sellerID *uint, name, desc *st
 	if err != nil {
 		return updatedProduct, err
 	}
+
+	// updatedProduct, err = s.elasticRepo.UpdateProduct(context.Background(), updatedProduct)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return updatedProduct, nil
 }

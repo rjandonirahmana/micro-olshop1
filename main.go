@@ -18,8 +18,12 @@ import (
 
 func main() {
 
-	tableProduct := elastic.NewCreateIndex([]string{"http://localhost:9200"})
-	err := tableProduct.CreateIndex("product")
+	tableProduct, err := elastic.NewCreateIndex([]string{"http://localhost:9200"})
+
+	if err != nil {
+		panic(err)
+	}
+	err = tableProduct.CreateIndex("product")
 	if err != nil {
 		fmt.Println(err)
 	}

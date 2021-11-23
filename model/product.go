@@ -14,9 +14,9 @@ type Product struct {
 }
 
 type ProductImage struct {
-	ProductID uint   `db:"product_id" json:"product_id,omitempty"`
-	IsPrimary uint   `db:"is_primary" json:"is_primary,omitempty"`
-	Name      string `db:"name" json:"name,omitempty"`
+	ProductID *uint   `db:"product_id" json:"product_id,omitempty"`
+	IsPrimary *uint   `db:"is_primary" json:"is_primary,omitempty"`
+	Name      *string `db:"name" json:"name,omitempty"`
 }
 
 type ProductCategory struct {
@@ -30,7 +30,7 @@ type Products struct {
 	Price         uint32          `db:"price" json:"price"`
 	Quantity      uint            `db:"quantity" json:"quantity"`
 	Rating        float32         `json:"rating"`
-	Category_id   uint            `db:"category_id" json:"-"`
+	CategoryID    uint            `db:"category_id" json:"-"`
 	Category      ProductCategory `db:"product_category" json:"category"`
 	Description   string          `db:"description" json:"description,omitempty"`
 	SellerID      uint            `db:"seller_id" json:"-"`

@@ -24,9 +24,9 @@ func NewElasticRepo(elastic Index, timeduration time.Duration) *repository {
 
 type RepoProduct interface {
 	InsertProduct(ctx context.Context, product *model.Product) error
-	GetProductByID(ctx context.Context, id string) (model.Product, error)
+	GetProductByID(ctx context.Context, id string) (*model.Product, error)
 	GetProductByName(ctx context.Context, product *string, categoryID *uint) ([]*model.Product, error)
-	UpdateProduct(ctx context.Context, product model.Product) (model.Product, error)
+	UpdateProduct(ctx context.Context, product *model.Product) (*model.Product, error)
 }
 
 type Storage struct {
@@ -68,7 +68,7 @@ func (r *repository) InsertProduct(ctx context.Context, product *model.Product) 
 
 }
 
-func (r *repository) GetProductByID(ctx context.Context, id string) (model.Product, error) {
+func (r *repository) GetProductByID(ctx context.Context, id string) (*model.Product, error) {
 	// p.Elastic.client.Get()
 
 	req := esapi.GetRequest{
@@ -81,15 +81,15 @@ func (r *repository) GetProductByID(ctx context.Context, id string) (model.Produ
 
 	res, err := req.Do(ctxTime, r.elastic.client)
 	if err != nil {
-		return model.Product{}, err
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		return model.Product{}, err
+		return nil, err
 	}
 	if res.StatusCode == 404 {
-		return model.Product{}, fmt.Errorf("cannot find")
+		return nil, fmt.Errorf("cannot find")
 	}
 
 	var (
@@ -100,14 +100,14 @@ func (r *repository) GetProductByID(ctx context.Context, id string) (model.Produ
 	body.Source = &storage
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		return model.Product{}, fmt.Errorf("find one: decode: %w", err)
+		return nil, fmt.Errorf("find one: decode: %w", err)
 	}
 
-	return storage, nil
+	return &storage, nil
 
 }
 
-func (r *repository) UpdateProduct(ctx context.Context, product model.Product) (model.Product, error) {
+func (r *repository) UpdateProduct(ctx context.Context, product *model.Product) (*model.Product, error) {
 	reqBody, err := json.Marshal(product)
 	if err != nil {
 		return product, err
@@ -116,7 +116,7 @@ func (r *repository) UpdateProduct(ctx context.Context, product model.Product) (
 	req := esapi.UpdateRequest{
 		Index:      r.elastic.indexName,
 		DocumentID: fmt.Sprint(product.ID),
-		Body:       bytes.NewBuffer(reqBody),
+		Body:       bytes.NewBuffer([]byte(fmt.Sprintf(`{"doc":%s}`, reqBody))),
 	}
 
 	res, err := req.Do(ctx, r.elastic.client)
@@ -141,10 +141,10 @@ func (r *repository) UpdateProduct(ctx context.Context, product model.Product) (
 	storage.Source = &body
 
 	if err := json.NewDecoder(res.Body).Decode(&storage); err != nil {
-		return model.Product{}, fmt.Errorf("find one: decode: %w", err)
+		return nil, fmt.Errorf("find one: decode: %w", err)
 	}
 
-	return body, nil
+	return &body, nil
 }
 
 func (r *repository) GetProductByName(ctx context.Context, product *string, categoryID *uint) ([]*model.Product, error) {
@@ -215,14 +215,16 @@ func (r *repository) GetProductByName(ctx context.Context, product *string, cate
 
 	for _, hit := range hits.Hits.Hits {
 		pr := &model.Product{
-			ID:          hit.ID,
-			Name:        hit.Name,
-			Price:       hit.Price,
-			Quantity:    hit.Quantity,
-			Description: hit.Description,
-			Rating:      hit.Rating,
-			SellerID:    hit.SellerID,
-			CategoryID:  hit.CategoryID,
+			ID:            hit.ID,
+			Name:          hit.Name,
+			Price:         hit.Price,
+			Quantity:      hit.Quantity,
+			Description:   hit.Description,
+			Rating:        hit.Rating,
+			SellerID:      hit.SellerID,
+			CategoryID:    hit.CategoryID,
+			Category:      hit.Category,
+			ProductImages: hit.ProductImages,
 		}
 
 		res = append(res, pr)
@@ -243,4 +245,4 @@ func (r *repository) GetProductByName(ctx context.Context, product *string, cate
 	return res, nil
 }
 
-// func (r *repository) SearchProducts(name *string, )
+// func (r *repository) SearchProducts(name *string)

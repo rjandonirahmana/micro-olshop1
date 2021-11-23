@@ -9,9 +9,9 @@ import (
 
 type Service interface {
 	GenerateToken(customer_id uint) (string, error)
-	ValidateToken(token string) (uint, error)
+	ValidateToken(token string) (uint, *int64, error)
 	GenerateTokenSeller(seller_id uint) (string, error)
-	ValidateTokenSeller(encodedToken string) (uint, error)
+	ValidateTokenSeller(encodedToken string) (uint, *int64, error)
 }
 
 type jwtService struct {
@@ -39,7 +39,7 @@ func (j *jwtService) GenerateToken(customer_id uint) (string, error) {
 	return signedToken, nil
 }
 
-func (j *jwtService) ValidateToken(encodedToken string) (uint, error) {
+func (j *jwtService) ValidateToken(encodedToken string) (uint, *int64, error) {
 	tokenclaim, err := jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
@@ -50,16 +50,17 @@ func (j *jwtService) ValidateToken(encodedToken string) (uint, error) {
 
 	})
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	claim, ok := tokenclaim.Claims.(jwt.MapClaims)
 	if !ok || !tokenclaim.Valid {
-		return 0, errors.New("unauthorized")
+		return 0, nil, errors.New("unauthorized")
 	}
 
 	id := uint(claim["customer_id"].(float64))
+	exp := int64(claim["exp"].(float64))
 
-	return id, nil
+	return id, &exp, nil
 }
 
 func (j *jwtService) GenerateTokenSeller(seller_id uint) (string, error) {
@@ -78,7 +79,7 @@ func (j *jwtService) GenerateTokenSeller(seller_id uint) (string, error) {
 	return signedToken, nil
 }
 
-func (j *jwtService) ValidateTokenSeller(encodedToken string) (uint, error) {
+func (j *jwtService) ValidateTokenSeller(encodedToken string) (uint, *int64, error) {
 	tokenclaim, err := jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
@@ -89,15 +90,16 @@ func (j *jwtService) ValidateTokenSeller(encodedToken string) (uint, error) {
 
 	})
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	claim, ok := tokenclaim.Claims.(jwt.MapClaims)
 	if !ok || !tokenclaim.Valid {
-		return 0, err
+		return 0, nil, err
 	}
 
 	id := uint(claim["seller_id"].(float64))
+	exp := int64(claim["exp"].(float64))
 
-	return id, nil
+	return id, &exp, nil
 }

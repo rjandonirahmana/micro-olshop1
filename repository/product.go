@@ -28,21 +28,21 @@ func NewRepoProduct(db *sqlx.DB) *repository {
 func (r *repository) GetProductByID(id *uint) (*model.Products, error) {
 	querry := `SELECT p.*, pc.id as "product_category.id", pc.name as "product_category.name" FROM products p INNER JOIN product_category pc ON p.category_id = pc.id  WHERE p.id = ?`
 
-	var product *model.Products
+	var product model.Products
 	err := r.db.Get(&product, querry, id)
 	if err != sql.ErrNoRows {
 		fmt.Println(err)
-		return product, err
+		return &product, err
 	}
 	var images []model.ProductImage
 	err = r.db.Select(&images, `SELECT * FROM product_images p WHERE p.product_id = ?`, id)
 	if err != sql.ErrNoRows {
-		return product, err
+		return &product, err
 	}
 
 	product.ProductImages = append(product.ProductImages, images...)
 
-	return product, nil
+	return &product, nil
 }
 
 func (r *repository) GetByCategoryID(id uint) ([]*model.Product, error) {

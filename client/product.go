@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -33,11 +32,6 @@ type Client struct {
 	timeout time.Duration
 }
 
-type responseProducts struct {
-	Meta Meta            `json:"meta"`
-	Data []model.Product `json:"data"`
-}
-
 type Storage struct {
 	Source interface{} `json:"data"`
 }
@@ -47,13 +41,13 @@ func NewClientProduct(host string, timeout time.Duration) *Client {
 }
 
 type ProductInt interface {
-	GetProductByid(id uint) (model.Products, error)
+	GetProductByid(id uint) (*model.Products, error)
 	InsertProduct(input model.InputNewPoduct) (*model.Product, error)
-	SearchProduct(keyword, category, order string) ([]model.Product, error)
+	SearchProduct(keyword, category, order string) ([]*model.Product, error)
 }
 
 func (c *Client) GetProductByid(id uint) (*model.Products, error) {
-	cl := http.Client{
+	cl := &http.Client{
 		Timeout: c.timeout,
 	}
 
@@ -93,7 +87,7 @@ func (c *Client) GetProductByid(id uint) (*model.Products, error) {
 }
 
 func (c *Client) InsertProduct(input model.InputNewPoduct) (*model.Product, error) {
-	client := http.Client{
+	client := &http.Client{
 		Timeout: c.timeout,
 	}
 
@@ -134,38 +128,38 @@ func (c *Client) InsertProduct(input model.InputNewPoduct) (*model.Product, erro
 	return &response, nil
 }
 
-func (c *Client) SearchProduct(keyword, category, order string) ([]model.Product, error) {
-	client := http.Client{
+func (c *Client) SearchProduct(keyword, category, order string) ([]*model.Product, error) {
+	client := &http.Client{
 		Timeout: c.timeout,
 	}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v1/search/%s?category=%s&order=%s", c.host, keyword, category, order), nil)
 	if err != nil {
-		return []model.Product{}, err
+		return nil, err
 	}
 
 	res, err := client.Do(req)
 	if err != nil {
-		return []model.Product{}, err
+		return nil, err
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return []model.Product{}, err
+		return nil, fmt.Errorf("not http status ok")
 	}
 
-	resByte, err := ioutil.ReadAll(res.Body)
+	var (
+		Data   []*model.Product
+		Source Storage
+	)
+
+	Source.Source = &Data
+
+	err = json.NewDecoder(res.Body).Decode(&Source)
 	if err != nil {
-		return []model.Product{}, err
+		return nil, err
 	}
-
-	var response responseProducts
-	err = json.Unmarshal(resByte, &response)
-	if err != nil {
-		return []model.Product{}, err
-	}
-
-	return response.Data, nil
+	return Data, nil
 
 }
