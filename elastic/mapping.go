@@ -25,7 +25,7 @@ var products string = ` {
 					"type":"interger"
 				},
 				"category_id":{
-					"type":"date"
+					"type":"interger"
 				},
 				"product_images" : {
 					"type" : "nested",
@@ -36,7 +36,7 @@ var products string = ` {
 						"is_primary" : {
 							"type" : "bool"
 						},
-						"product_id" : {
+						"id" : {
 							"type" : "interger"
 						}
 
@@ -45,6 +45,9 @@ var products string = ` {
 				},
 				"description" : {
 					"type" : "text"
+				},
+				"weight" : {
+					"type" : "float"
 				}
 
 			}

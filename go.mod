@@ -3,6 +3,7 @@ module github.com/rjandonirahmana/micro-olshop1
 go 1.17
 
 require (
+	github.com/Bhinneka/go-rajaongkir v0.0.0-20180209093955-b24cf6077786
 	github.com/elastic/go-elasticsearch/v7 v7.15.1
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-playground/validator/v10 v10.9.0

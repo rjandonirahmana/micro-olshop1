@@ -1,3 +1,5 @@
+github.com/Bhinneka/go-rajaongkir v0.0.0-20180209093955-b24cf6077786 h1:F8wBfr7A/SPhs00P3tO2cejD5IHMQjmQlOi3WEAxN6E=
+github.com/Bhinneka/go-rajaongkir v0.0.0-20180209093955-b24cf6077786/go.mod h1:VevmOH8U7yRwYqDHBkJxzJbmLSvetpGBvJGp97FkHCk=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

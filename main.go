@@ -12,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rjandonirahmana/micro-olshop1/elastic"
 	"github.com/rjandonirahmana/micro-olshop1/handler/product"
+	"github.com/rjandonirahmana/micro-olshop1/ongkir"
 	"github.com/rjandonirahmana/micro-olshop1/repository"
 	"github.com/rjandonirahmana/micro-olshop1/service"
 )
@@ -48,6 +49,8 @@ func main() {
 	serviceProduct := service.NewUsecaseProduct(SQLrepoProduct, repoProduct)
 	HandlerProduct := product.NewProductHandler(serviceProduct)
 
+	handlerOngkir := ongkir.NewOngkir("21a401728b2b16adc7a04d7fd2d14b43", 3*time.Second)
+
 	c := gin.Default()
 	api := c.Group("/api/v1")
 
@@ -57,6 +60,9 @@ func main() {
 	api.POST("/newproduct", HandlerProduct.InsertNewProduct)
 	api.PUT("/product", HandlerProduct.UpdateProduct)
 	api.GET("/product", HandlerProduct.GetProductsByname)
+
+	api.GET("/cost", handlerOngkir.CekOngkir)
+	api.GET("/city", handlerOngkir.GetCity)
 
 	c.Run(":6262")
 
