@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS seller CASCADE;
 
 CREATE TABLE IF NOT EXISTS seller
 (
-    id           UUID PRIMARY KEY                     DEFAULT uuid_generate_v4(),
+    id           VARCHAR(50)                     NOT NULL,
     name         VARCHAR(50)                 NOT NULL CHECK ( first_name <> '' ),
     email        VARCHAR(64) UNIQUE          NOT NULL CHECK ( email <> '' ),
     password     VARCHAR(250)                NOT NULL CHECK ( octet_length(password) <> 0 ),
