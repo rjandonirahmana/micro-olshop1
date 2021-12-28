@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -13,10 +14,10 @@ type repository struct {
 }
 
 type RepoProduct interface {
-	GetProductByID(id *uint) (*model.Products, error)
+	GetProductByID(id *string) (*model.Products, error)
 	GetByCategoryID(id uint) ([]*model.Product, error)
 	SearchAndByorder(keyword *string, category, order *uint) ([]*model.Product, error)
-	InsertNewProduct(product *model.Product) (*model.Product, error)
+	InsertNewProduct(ctx context.Context, product *model.Product) (*model.Product, error)
 	DeleteByID(id uint) error
 	UpdateProduct(p *model.Product) (*model.Product, error)
 }
@@ -25,7 +26,7 @@ func NewRepoProduct(db *sqlx.DB) *repository {
 	return &repository{db: db}
 }
 
-func (r *repository) GetProductByID(id *uint) (*model.Products, error) {
+func (r *repository) GetProductByID(id *string) (*model.Products, error) {
 	querry := `SELECT p.*, pc.id as "product_category.id", pc.name as "product_category.name" FROM products p INNER JOIN product_category pc ON p.category_id = pc.id  WHERE p.id = ?`
 
 	var product model.Products
@@ -80,19 +81,13 @@ func (r *repository) SearchAndByorder(keyword *string, category, order *uint) ([
 	return product, nil
 }
 
-func (r *repository) InsertNewProduct(product *model.Product) (*model.Product, error) {
-	querry := `INSERT INTO products (name, price, quantity, description, category_id, seller_id) VALUES (?,?,?,?,?,?)`
+func (r *repository) InsertNewProduct(ctx context.Context, product *model.Product) (*model.Product, error) {
+	querry := `INSERT INTO products (id, name, price, quantity, description, category_id, seller_id) VALUES (?,?,?,?,?,?,?)`
 
-	_, err := r.db.Exec(querry, product.Name, product.Price, product.Quantity, product.Description, product.CategoryID, product.SellerID)
+	err := r.db.QueryRowxContext(ctx, querry, product.ID, product.Name, product.Price, product.Quantity, product.Description, product.CategoryID, product.SellerID).Err()
 	if err != nil {
 		return product, err
 	}
-	querry = `SELECT last_insert_id()`
-	err = r.db.Get(&product.ID, querry)
-	if err != nil {
-		return product, err
-	}
-
 	return product, nil
 
 }

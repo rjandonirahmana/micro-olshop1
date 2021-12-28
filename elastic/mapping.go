@@ -1,56 +1,58 @@
 package elastic
 
-//put localhost/9200/olshopala_products
-var products string = ` {
-	"settings":{
-		"number_of_shards": 3,
-		"number_of_replicas": 1
-	},
-	"mappings":{
-		"records":{
-			"properties":{
-				"id": {
-					"type" : "interger"
-				},
-				"name":{
-					"type":"keyword"
-				},
-				"price":{
-					"type":"interger"
-				},
-				"rating":{
-					"type":"float"
-				},
-				"seller_id":{
-					"type":"interger"
-				},
-				"category_id":{
-					"type":"date"
-				},
-				"product_images" : {
-					"type" : "nested",
-					"properties" : {
-						"name" : {
-							"type" : "keyword"
-						},
-						"is_primary" : {
-							"type" : "bool"
-						},
-						"product_id" : {
-							"type" : "interger"
-						}
+// //put localhost/9200/olshopala_products
+// var products string = ` {
+// 	"settings":{
+// 		"number_of_shards": 3,
+// 		"number_of_replicas": 1
+// 	},
+// 	"mappings":{
+// 		"records":{
+// 			"properties":{
+// 				"id": {
+// 					"type" : "interger"
+// 				},
+// 				"name":{
+// 					"type":"keyword"
+// 				},
+// 				"price":{
+// 					"type":"interger"
+// 				},
+// 				"rating":{
+// 					"type":"float"
+// 				},
+// 				"seller_id":{
+// 					"type":"interger"
+// 				},
+// 				"category_id":{
+// 					"type":"interger"
+// 				},
+// 				"product_images" : {
+// 					"type" : "nested",
+// 					"properties" : {
+// 						"name" : {
+// 							"type" : "keyword"
+// 						},
+// 						"is_primary" : {
+// 							"type" : "bool"
+// 						},
+// 						"id" : {
+// 							"type" : "interger"
+// 						}
 
-						
-					}
-				},
-				"description" : {
-					"type" : "text"
-				}
+// 					}
+// 				},
+// 				"description" : {
+// 					"type" : "text"
+// 				},
+// 				"weight" : {
+// 					"type" : "float"
+// 				}
 
-			}
-		}
-	}
-}`
+// 			}
+// 		}
+// 	}
+// }`
 
 // Price         uint32          `db:"price" json:"price"`
 // 	Quantity      uint            `db:"quantity" json:"quantity"`

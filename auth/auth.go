@@ -8,10 +8,10 @@ import (
 )
 
 type Service interface {
-	GenerateToken(customer_id uint) (string, error)
-	ValidateToken(token string) (uint, *int64, error)
-	GenerateTokenSeller(seller_id uint) (string, error)
-	ValidateTokenSeller(encodedToken string) (uint, *int64, error)
+	GenerateToken(customer_id string) (string, error)
+	ValidateToken(token string) (string, *int64, error)
+	GenerateTokenSeller(seller_id string) (string, error)
+	ValidateTokenSeller(encodedToken string) (string, *int64, error)
 }
 
 type jwtService struct {
@@ -28,7 +28,7 @@ func (j *jwtService) GenerateToken(customer_id uint) (string, error) {
 	//claim adalah payload data jwt
 	claim := jwt.MapClaims{}
 	claim["customer_id"] = customer_id
-	claim["exp"] = time.Now().Add(time.Hour * 8).Unix()
+	claim["exp"] = time.Now().Add(time.Hour * 50).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	signedToken, err := token.SignedString(j.SECRET_KEY)
@@ -68,7 +68,7 @@ func (j *jwtService) GenerateTokenSeller(seller_id uint) (string, error) {
 	//claim adalah payload data jwt
 	claim := jwt.MapClaims{}
 	claim["seller_id"] = seller_id
-	claim["exp"] = time.Now().Add(time.Hour * 8).Unix()
+	claim["exp"] = time.Now().Add(time.Hour * 50).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	signedToken, err := token.SignedString(j.SECRET_KEY2)

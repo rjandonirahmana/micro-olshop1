@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package product;
+option go_package = "./product";
+
+message GetProductByIDReq {
+  string ID = 1;
+}
+
+
+message GetProductByIDOutput {
+  string ID = 1;
+  int32 Price = 2;
+  int32 Quantity = 3;
+  float Rating = 4;
+  int32 CategoryID = 5;
+  ProductCategory Category = 6;
+  string Description = 7;
+  string SellerID = 8;
+  repeated ProductImages ProductImage = 9;
+
+}
+
+message ProductCategory {
+  int32 ID = 1;
+  string Name = 2;
+}
+
+message ProductImages {
+  int32 productID = 1;
+  int32 IsPrimary = 2;
+  string Name = 3;   
+}
+
+message InputNewProduct {
+  string Name = 1;
+	uint32 Price = 2;
+	uint32 Quantity = 3;
+	uint32 Category_id = 4;
+	string Description = 5;
+	string Seller_id = 6;
+}
+
+
+
+
+service UserService {
+  rpc GetProductByID(GetProductByIDReq) returns (GetProductByIDOutput);
+  rpc InsertNewProduct(InputNewProduct) returns (GetProductByIDOutput);
+}

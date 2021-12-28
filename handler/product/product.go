@@ -41,22 +41,15 @@ func (h *HandlerProduct) GetProductByCategory(c *gin.Context) {
 }
 
 func (h *HandlerProduct) GetProductByID(c *gin.Context) {
-	product_id, err := strconv.Atoi(c.Param("id"))
+	product_id := c.Param("id")
+	product, err := h.service.GetProductByid(&product_id)
 	if err != nil {
 		response := handler.APIResponse("failed", http.StatusUnprocessableEntity, err.Error(), nil)
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
-	id := uint(product_id)
-	product, err := h.service.GetProductByid(&id)
-	if err != nil {
-		response := handler.APIResponse("failed", http.StatusUnprocessableEntity, err.Error(), nil)
-		c.JSON(http.StatusUnprocessableEntity, response)
-		return
-	}
-
-	if product.ID == 0 {
+	if product.ID == "" {
 		response := handler.APIResponse("failed", http.StatusBadRequest, "product not found", nil)
 		c.JSON(http.StatusBadRequest, response)
 		return
@@ -105,7 +98,7 @@ func (h *HandlerProduct) InsertNewProduct(c *gin.Context) {
 		return
 	}
 
-	product, err := h.service.InsertNewProduct(input.Name, input.Description, input.Price, input.Quantity, input.Seller_id, input.Category_id)
+	product, err := h.service.InsertNewProduct(c.Request.Context(), input.Name, input.Description, input.Price, input.Quantity, input.Seller_id, input.Category_id)
 	if err != nil {
 		response := handler.APIResponse("failed to insert prouct", http.StatusUnprocessableEntity, err.Error(), nil)
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -120,19 +113,17 @@ func (h *HandlerProduct) UpdateProduct(c *gin.Context) {
 
 	name := c.Request.FormValue("name")
 	desc := c.Request.FormValue("desc")
-	productID, _ := strconv.ParseUint(c.Request.FormValue("product_id"), 10, 32)
-	sellerID, _ := strconv.ParseUint(c.Request.FormValue("seller_id"), 10, 32)
+	productID := c.Request.FormValue("product_id")
+	sellerID := c.Request.FormValue("seller_id")
 	price, _ := strconv.ParseInt((c.Request.FormValue("price")), 10, 32)
 	qty, _ := strconv.Atoi(c.Request.FormValue("qty"))
 	categoryID, _ := strconv.Atoi(c.Request.FormValue("category_id"))
 
 	price32 := uint32(price)
-	product_id := uint(productID)
-	seller := uint(sellerID)
 	quantity := uint(qty)
 	category := uint(categoryID)
 
-	product, err := h.service.UpdateProduct(&product_id, &seller, &name, &desc, &price32, &quantity, &category)
+	product, err := h.service.UpdateProduct(&productID, &sellerID, &name, &desc, &price32, &quantity, &category)
 	if err != nil {
 		response := handler.APIResponse("failed to insert prouct", http.StatusUnprocessableEntity, err.Error(), nil)
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -144,19 +135,19 @@ func (h *HandlerProduct) UpdateProduct(c *gin.Context) {
 
 }
 
-func (h *HandlerProduct) GetProductsByname(c *gin.Context) {
-	keyword := c.Request.FormValue("keyword")
-	categoryID, _ := strconv.Atoi(c.Request.FormValue("category"))
-	category := uint(categoryID)
+// func (h *HandlerProduct) GetProductsByname(c *gin.Context) {
+// 	keyword := c.Request.FormValue("keyword")
+// 	categoryID, _ := strconv.Atoi(c.Request.FormValue("category"))
+// 	category := uint(categoryID)
 
-	products, err := h.service.GetProductByName(&keyword, &category)
-	if err != nil {
-		response := handler.APIResponse("failed to insert prouct", http.StatusUnprocessableEntity, err.Error(), nil)
-		c.JSON(http.StatusUnprocessableEntity, response)
-		return
-	}
+// 	products, err := h.service.GetProductByName(&keyword, &category)
+// 	if err != nil {
+// 		response := handler.APIResponse("failed to insert prouct", http.StatusUnprocessableEntity, err.Error(), nil)
+// 		c.JSON(http.StatusUnprocessableEntity, response)
+// 		return
+// 	}
 
-	response := handler.APIResponse("successfully get products", http.StatusOK, "success", products)
-	c.JSON(http.StatusOK, response)
+// 	response := handler.APIResponse("successfully get products", http.StatusOK, "success", products)
+// 	c.JSON(http.StatusOK, response)
 
-}
+// }

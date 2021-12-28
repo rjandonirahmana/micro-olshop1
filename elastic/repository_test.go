@@ -18,7 +18,7 @@ func TestUpdate(t *testing.T) {
 	}{
 		{
 			nametest: "1",
-			product:  &model.Product{Name: "cobaganti", ID: 47, Price: 10000},
+			product:  &model.Product{Name: "cobaganti", ID: "47", Price: 10000},
 			err:      nil,
 		},
 	}

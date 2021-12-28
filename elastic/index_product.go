@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/elastic/go-elasticsearch/v7"
+	elasticsearch "github.com/elastic/go-elasticsearch/v7"
 )
 
 type Index struct {
