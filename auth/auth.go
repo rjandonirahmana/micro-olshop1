@@ -8,10 +8,10 @@ import (
 )
 
 type Service interface {
-	GenerateToken(customer_id uint) (string, error)
-	ValidateToken(token string) (uint, *int64, error)
-	GenerateTokenSeller(seller_id uint) (string, error)
-	ValidateTokenSeller(encodedToken string) (uint, *int64, error)
+	GenerateToken(customer_id string) (string, error)
+	ValidateToken(token string) (string, *int64, error)
+	GenerateTokenSeller(seller_id string) (string, error)
+	ValidateTokenSeller(encodedToken string) (string, *int64, error)
 }
 
 type jwtService struct {

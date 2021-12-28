@@ -5,27 +5,27 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/rjandonirahmana/micro-olshop1/elastic"
+	"github.com/google/uuid"
 	"github.com/rjandonirahmana/micro-olshop1/model"
 	"github.com/rjandonirahmana/micro-olshop1/repository"
 )
 
 type serviceProduct struct {
-	repository  repository.RepoProduct
-	elasticRepo elastic.RepoProduct
+	repository repository.RepoProduct
+	// elasticRepo elastic.RepoProduct
 }
 
-func NewUsecaseProduct(repo repository.RepoProduct, elastic elastic.RepoProduct) *serviceProduct {
-	return &serviceProduct{repository: repo, elasticRepo: elastic}
+func NewUsecaseProduct(repo repository.RepoProduct) *serviceProduct {
+	return &serviceProduct{repository: repo}
 }
 
 type ServiceProductInt interface {
 	GetProductCategory(id uint) ([]*model.Product, error)
-	GetProductByid(id *uint) (*model.Products, error)
+	GetProductByid(id *string) (*model.Products, error)
 	SearchByCategoryByOrder(keyword *string, category, order *uint) ([]*model.Product, error)
-	InsertNewProduct(name, desc string, price uint32, qty uint, seller_id uint, category_id uint) (*model.Product, error)
-	UpdateProduct(productID, sellerID *uint, name, desc *string, price *uint32, qty, categoryID *uint) (*model.Product, error)
-	GetProductByName(product *string, categoryID *uint) ([]*model.Product, error)
+	InsertNewProduct(ctx context.Context, name, desc string, price uint32, qty uint, seller_id string, category_id uint) (*model.Product, error)
+	UpdateProduct(productID *string, sellerID *string, name, desc *string, price *uint32, qty, categoryID *uint) (*model.Product, error)
+	// GetProductByName(product *string, categoryID *uint) ([]*model.Product, error)
 }
 
 func (s *serviceProduct) GetProductCategory(id uint) ([]*model.Product, error) {
@@ -42,7 +42,7 @@ func (s *serviceProduct) GetProductCategory(id uint) ([]*model.Product, error) {
 	return products, nil
 }
 
-func (s *serviceProduct) GetProductByid(id *uint) (*model.Products, error) {
+func (s *serviceProduct) GetProductByid(id *string) (*model.Products, error) {
 	product, err := s.repository.GetProductByID(id)
 
 	if err != nil {
@@ -65,7 +65,7 @@ func (s *serviceProduct) SearchByCategoryByOrder(keyword *string, category, orde
 	return products, nil
 }
 
-func (s *serviceProduct) InsertNewProduct(name, desc string, price uint32, qty uint, seller_id uint, category_id uint) (*model.Product, error) {
+func (s *serviceProduct) InsertNewProduct(ctx context.Context, name, desc string, price uint32, qty uint, seller_id string, category_id uint) (*model.Product, error) {
 	product := &model.Product{
 		Name:        name,
 		Description: desc,
@@ -73,22 +73,23 @@ func (s *serviceProduct) InsertNewProduct(name, desc string, price uint32, qty u
 		Quantity:    qty,
 		SellerID:    seller_id,
 		CategoryID:  category_id,
+		ID:          uuid.New().String(),
 	}
-	product, err := s.repository.InsertNewProduct(product)
+	product, err := s.repository.InsertNewProduct(ctx, product)
 	if err != nil {
 		return product, err
 	}
 
-	err = s.elasticRepo.InsertProduct(context.Background(), product)
-	if err != nil {
-		s.repository.DeleteByID(product.ID)
-		return product, fmt.Errorf("error : %v and cannot insert to elastic please try insert again", err)
-	}
+	// err = s.elasticRepo.InsertProduct(context.Background(), product)
+	// if err != nil {
+	// 	s.repository.DeleteByID(product.ID)
+	// 	return product, fmt.Errorf("error : %v and cannot insert to elastic please try insert again", err)
+	// }
 
 	return product, nil
 }
 
-func (s *serviceProduct) UpdateProduct(productID, sellerID *uint, name, desc *string, price *uint32, qty, categoryID *uint) (*model.Product, error) {
+func (s *serviceProduct) UpdateProduct(productID *string, sellerID *string, name, desc *string, price *uint32, qty, categoryID *uint) (*model.Product, error) {
 	product, err := s.repository.GetProductByID(productID)
 	if err != nil {
 		return nil, err
@@ -138,13 +139,13 @@ func (s *serviceProduct) UpdateProduct(productID, sellerID *uint, name, desc *st
 	return updatedProduct, nil
 }
 
-func (s *serviceProduct) GetProductByName(product *string, categoryID *uint) ([]*model.Product, error) {
-	ctx := context.Background()
+// func (s *serviceProduct) GetProductByName(product *string, categoryID *uint) ([]*model.Product, error) {
+// 	// ctx := context.Background()
 
-	products, err := s.elasticRepo.GetProductByName(ctx, product, categoryID)
-	if err != nil {
-		return products, err
-	}
+// 	// // products, err := s.elasticRepo.GetProductByName(ctx, product, categoryID)
+// 	// // if err != nil {
+// 	// // 	return products, err
+// 	// // }
 
-	return products, nil
-}
+// 	// return products, nil
+// }

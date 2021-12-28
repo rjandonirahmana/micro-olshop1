@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"time"
 
@@ -10,28 +11,29 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
-	"github.com/rjandonirahmana/micro-olshop1/elastic"
+	grpcproduct "github.com/rjandonirahmana/micro-olshop1/grpc/product"
 	"github.com/rjandonirahmana/micro-olshop1/handler/product"
 	"github.com/rjandonirahmana/micro-olshop1/ongkir"
 	"github.com/rjandonirahmana/micro-olshop1/repository"
 	"github.com/rjandonirahmana/micro-olshop1/service"
+	"google.golang.org/grpc"
 )
 
 func main() {
 
-	tableProduct, err := elastic.NewCreateIndex([]string{"http://localhost:9200"})
+	// tableProduct, err := elastic.NewCreateIndex([]string{"http://localhost:9200"})
 
-	if err != nil {
-		panic(err)
-	}
-	err = tableProduct.CreateIndex("product")
-	if err != nil {
-		fmt.Println(err)
-	}
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// err = tableProduct.CreateIndex("product")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	repoProduct := elastic.NewElasticRepo(*tableProduct, time.Second*10)
+	// repoProduct := elastic.NewElasticRepo(*tableProduct, time.Second*10)
 
-	err = godotenv.Load(".env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -46,11 +48,25 @@ func main() {
 	}
 
 	SQLrepoProduct := repository.NewRepoProduct(db)
-	serviceProduct := service.NewUsecaseProduct(SQLrepoProduct, repoProduct)
+	serviceProduct := service.NewUsecaseProduct(SQLrepoProduct)
 	HandlerProduct := product.NewProductHandler(serviceProduct)
 
-	handlerOngkir := ongkir.NewOngkir("21a401728b2b16adc7a04d7fd2d14b43", 3*time.Second)
+	handlerOngkir := ongkir.NewOngkir("21a40172jdjdhdbsgs", 3*time.Second)
 
+	go func() {
+		listen, err := net.Listen("tcp", ":10010")
+		if err != nil {
+			log.Fatalf("[ERROR] Failed to listen tcp: %v", err)
+		}
+
+		grpcServer := grpc.NewServer()
+		grpcproduct.RegisterUserServiceServer(grpcServer, service.NewGRPCProduct(serviceProduct))
+
+		log.Println("gRPC server is running...")
+		if err := grpcServer.Serve(listen); err != nil {
+			log.Fatalf("Failed to serve: %v", err)
+		}
+	}()
 	c := gin.Default()
 	api := c.Group("/api/v1")
 
@@ -59,7 +75,7 @@ func main() {
 	api.GET("/search/:keyword", HandlerProduct.SearchProduct)
 	api.POST("/newproduct", HandlerProduct.InsertNewProduct)
 	api.PUT("/product", HandlerProduct.UpdateProduct)
-	api.GET("/product", HandlerProduct.GetProductsByname)
+	// api.GET("/product", HandlerProduct.GetProductsByname)
 
 	api.GET("/cost", handlerOngkir.CekOngkir)
 	api.GET("/city", handlerOngkir.GetCity)
